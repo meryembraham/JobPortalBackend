@@ -9,6 +9,7 @@ class Document extends Model
 {
     use HasFactory;
     public function condidat()
+    
     {
         return $this->belongsTo(Condidat::class);
     }
