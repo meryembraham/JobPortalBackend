@@ -43,7 +43,9 @@ class CategorieController extends Controller
      */
     public function store(StoreCategorieRequest $request)
     {
-        return Categorie::create($request->all());//
+        $categorie = new Categorie();
+        $categorie->nom = $request->nom;
+        $categorie->save();//
     }
 
     /**
@@ -75,9 +77,11 @@ class CategorieController extends Controller
      * @param  \App\Models\Categorie  $categorie
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateCategorieRequest $request, Categorie $categorie)
+    public function update(UpdateCategorieRequest $request, $categorie_id)
     {
-        return $categorie->update($request->all());//
+        $categorie = Categorie::Find($categorie_id);
+        $categorie->nom = $request->nom;
+        $categorie->save();//
     }
 
     /**
@@ -86,8 +90,9 @@ class CategorieController extends Controller
      * @param  \App\Models\Categorie  $categorie
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Categorie $categorie)
+    public function destroy($categorie_id)
     {
+        $categorie = Categorie::Find($categorie_id);
         return $categorie->delete();//
     }
 }

@@ -16,9 +16,5 @@ class Demande extends Model
     {
         return $this->belongsTo(Offre::class);
     }
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
 
 }

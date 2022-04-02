@@ -23,12 +23,13 @@ class Offre extends Model
     {
         return $this->belongsTo(Entreprise::class);
     }
-    public function condidatures()
+    public function demandes()
     {
-        return $this->hasMany(Condidature::class);
+        return $this->hasMany(Demande::class);
     }
+    
     public function notifications()
     {
-        return $this->hasMany(Condidature::class);
+        return $this->hasMany(Demande::class);
     }
 }

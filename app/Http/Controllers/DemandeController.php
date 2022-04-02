@@ -23,17 +23,17 @@ class DemandeController extends Controller
      */
     public function index()
     {
-        $demandeEntreprise = null;
+        
         $entreprise = auth()->user()->entreprise;
 
         if ($entreprise) {
             $ids =  $entreprise->offres()->pluck('id');
             $demandes = Demande::whereIn('offre_id', $ids);
-            $demandeEntreprise= $demandes->with('user', 'offre')->latest()->paginate(10);
+            
         }
 
         response()->json([
-            'demandes' => $demandeEntreprise
+            'demandes' => $demandes
         ]);
     }
 
@@ -53,9 +53,9 @@ class DemandeController extends Controller
      * @param  \App\Http\Requests\StoreDemandeRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store($offre_id, User $user,Request $request)
+    public function ajoutDemande($offre_id, User $user)
     {
-        $demande= Demande::where(['user_id' => $user->id, 'offre_id' => $offre_id])->first();
+        $demande= Demande::where(['user_id' => $user->id, 'offre_id' => $offre_id]);
 
         if ($demande) {
             return response()->json(['message' => 'You already applied for this job'], 403);
@@ -65,6 +65,7 @@ class DemandeController extends Controller
         $demande->offre_id = $offre_id;
         $demande->entreprise_id = $entreprise->entreprise_id;
         $demande->user_id = Auth::user()->id;
+        $demande->status='suspendu';
         $demande->save();
         return response()->json(['success' => true, 'message' => 'Application saved']);
     }
@@ -75,14 +76,12 @@ class DemandeController extends Controller
      * @param  \App\Models\Demande  $demande
      * @return \Illuminate\Http\Response
      */
-    public function show($offre_id)
+    public function show($id)
     {
-        $demande = Demande::find($offre_id);
-
-        $offre = $demande->offre()/*->first()*/;
-        $condidat =$demande->user()->condidat;
-
-        $entreprise = $offre->company();
+        $demande = Demande::find($id);
+        $offre = $demande->offre();
+        $condidat =$demande->condidat;
+        $entreprise = $offre->entreprise();
         response()->json([
             'condidat' => $condidat,
             'offre' => $offre,
@@ -127,19 +126,35 @@ class DemandeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function accept(Demande $demande)
+    public function accept(Request $request)
     {
-        
-        $offre=$demande->offre();
+        $id=$request->id;
+        $demande= Demande::where(['id' => $id]);
+        $offre=$demande->offre;
         $offre_id=$offre->id;
-        $user_id=$demande->user_id;
-        if(Demande::where(['user_id'=>$user_id,'offre_id'=>$offre_id])->exists() && $offre->user_id == auth()->user())
+        $condidat_id=$demande->condidat_id;
+        if(Demande::where(['condidat'=>$condidat_id,'offre_id'=>$offre_id])->exists() && $offre->user_id == auth()->user())
         {
             DB::table('offres')->where('offre_id', $offre_id)->update([
             'etat_offre' => 'masquée',
-            'condi_accept' => $user_id
+            'condi_accept' => $condidat_id
             ]);
+            $demande->status='acceptée';
+            $id_accept=$demande->id;
+            if (Demande::where(['offre_id'=>$offre_id])->exists())
+            {
+                DB::table('demandes')
+                ->where('offre_id', $offre_id)
+                ->where('id','!=',$id_accept)
+                ->update([
+                    'status'=>'rejetée'
+                    ]);
+
+            }
+        
+
         }
     }
+    
 
 }

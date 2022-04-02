@@ -20,7 +20,7 @@ class CreateEntreprisesTable extends Migration
             $table->text('description');
             $table->string('categorie');
             $table->string('logo');
-            $table->string('photo_couverture');
+            $table->string('cover_img');
             $table->string('site');
             $table->text('adresse');
             $table->integer('tel');

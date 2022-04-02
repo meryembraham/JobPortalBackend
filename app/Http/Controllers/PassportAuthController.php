@@ -25,6 +25,7 @@ class PassportAuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
             'password_confirmation' => 'min:6',
+            'role'=> 'required'
         ]);
         
         if($request->role == 'entreprise'){
@@ -39,18 +40,14 @@ class PassportAuthController extends Controller
             ]);
             
 
-        }elseif($request->role== 'condidat'){
+        }elseif($request->role == 'condidat'){
             $this->validate($request, [
             
                 'civilite' => 'required|not_in:-- Sélectionnez Civilité--',
                 'date_de_naissance' => 'required|date|date_format:Y-m-d|before:'.now()->subYears(18)->toDateString(),
                 'gouvernorat' => 'required|not_in:-- Sélectionnez Gouvernorat--',
             ]);
-            
-            
         }
-        
-        
         $input = $request->all(); 
         $input['password'] = bcrypt($input['password']); 
         $user = User::create($input); 
@@ -61,7 +58,7 @@ class PassportAuthController extends Controller
         {
             $entreprise= new Entreprise;
             $entreprise->user_id=$user->id;
-            $entreprise->nom_entreprise = $request->nom;
+            $entreprise->nom_entreprise = $request->nom_entreprise;
             $entreprise->tel = $request->tel;
             $entreprise->adresse = $request->adresse;
             $entreprise->logo = $request->logo;
@@ -76,7 +73,7 @@ class PassportAuthController extends Controller
             $condidat->prenom = $request->prenom;
             $condidat->civilite = $request->civilite;
             $condidat->date_de_naissance = $request->date_de_naissance;
-            $condidat->gouvernorat = $request->gouvernorat;
+            $condidat->localisation = $request->gouvernorat;
             $condidat->save();
         
         }
@@ -188,6 +185,7 @@ class PassportAuthController extends Controller
             'password'=>'required|min:6',
         ]);
         $user =Auth::user();
+        $user_id=$user->id;
         if(Hash::check($request->password, $user->password))
         {
             $user->email = $request['email'];
@@ -196,7 +194,33 @@ class PassportAuthController extends Controller
                 'message'=>'you can not change email',
             ],400);
         }
-        DB::update('update users set votes = 100 where name = ?', ['John']);
+        if ($user->role=='entreprise')
+        {
+            $this->validate($request, [
+                'nom_entreprise' => 'required',
+                'tel' => 'required|string',
+                'adresse' => 'required|string',
+                'logo' => 'required|image',
+                'description' => 'required|string',
+                'categorie' => 'required|not_in:-- choisir secteur--',
+
+            ]);
+            $entreprise=Entreprise::where(['user_id'=>$user_id]);
+            $entreprise->update($request->all());
+            
+
+        }elseif($user->role=='condidat')
+        {
+            $this->validate($request, [
+            
+                'civilite' => 'required|not_in:-- Sélectionnez Civilité--',
+                'date_de_naissance' => 'required|date|date_format:Y-m-d|before:'.now()->subYears(18)->toDateString(),
+                'gouvernorat' => 'required|not_in:-- Sélectionnez Gouvernorat--',
+            ]);
+            $condidat=Condidat::where(['user_id'=>$user_id]);
+            $condidat->update($request->all());
+            
+        }
         
     }
 

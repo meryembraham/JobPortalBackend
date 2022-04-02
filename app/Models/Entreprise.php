@@ -12,4 +12,12 @@ class Entreprise extends Model
     {
         return $this->hasOne(User::class);
     }
+    public function categorie()
+    {
+        return $this->belongsTo(Categorie::class);
+    }
+    public function offres()
+    {
+        return $this->hasMany(Offre::class);
+    }
 }

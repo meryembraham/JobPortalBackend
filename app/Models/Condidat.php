@@ -20,7 +20,7 @@ class Condidat extends Model
     {
         return $this->hasMany(Notification::class);
     }
-    public function condidatures()
+    public function demandes()
     {
         return $this->hasMany(Condidature::class);
     }
@@ -28,4 +28,19 @@ class Condidat extends Model
     {
         return $this->belongsTo(User::class);
     }
+    protected $fillable = [
+        'nom',
+        'prenom',
+        'avatar',
+        'tel',
+        'type',
+        'civilite',
+        'gouvernorat',
+        'date_de_naissance',
+        'education',
+        'competences',
+        'experience',
+        'langues',
+        'description',
+    ];
 }

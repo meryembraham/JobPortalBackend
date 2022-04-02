@@ -31,10 +31,9 @@ class OffreController extends Controller
     public function create()
     {
         if (!auth()->user()->role=='entreprise') {
-            Log::alert('You must create a company first!', 'info');
-            return redirect()->route('entreprise.create');
+            return response()->json(['error' => 'vous devez avoir un compte entreprise'], 404);
         }
-        return view('offre.create');//
+        //
     }
 
     /**
@@ -43,13 +42,12 @@ class OffreController extends Controller
      * @param  \App\Http\Requests\StoreOffreRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreOffreRequest $request)
+    public function ajoutOffre(StoreOffreRequest $request)
     {   
-        $user_id= auth()->user()->id;
+        
         $user= auth()->user();
         if (!auth()->user()->role=='entreprise') {
-            Log::alert('vous devez un compte entreprise', 'info');
-            return redirect()->route('entreprise.create');
+            return response()->json(['error' => 'Unauthorised'], 401);
         }
         $entreprise=$user->entreprise;
         $entreprise_id=$entreprise->id;

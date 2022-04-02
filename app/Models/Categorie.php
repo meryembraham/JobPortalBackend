@@ -12,4 +12,8 @@ class Categorie extends Model
     {
         return $this->hasMany(Offre::class);
     }
+    public function entreprises()
+    {
+        return $this->hasMany(Entreprise::class);
+    }
 }

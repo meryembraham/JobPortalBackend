@@ -21,6 +21,7 @@ class CreateCondidatsTable extends Migration
             $table->string('prenom');
             $table->integer('tel');
             $table->string('type');
+            $table->string('date_de_naissance');
             $table->text('education');
             $table->text('competences');
             $table->text('experience');

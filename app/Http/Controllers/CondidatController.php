@@ -43,7 +43,7 @@ class CondidatController extends Controller
      */
     public function store(StoreCondidatRequest $request)
     {
-        $condidat = Condidat::whereId(auth()->id())->first();
+        $condidat = Condidat::whereId(auth()->id());
         $data = $request->all();
         $validator = Validator::make($data,[
             'nom' => 'required|max:255',

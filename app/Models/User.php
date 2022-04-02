@@ -21,9 +21,20 @@ class User extends Authenticatable
     {
         return $this->belongsTo(entreprise::class);
     }
+    public function condidat()
+    {
+        return $this->belongsTo(Condidat::class);
+    }
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class);
+    }
+    
     protected $fillable = [
-        'name',
+        'nom',
+        'prenom',
         'email',
+        'role',
         'password',
     ];
 
