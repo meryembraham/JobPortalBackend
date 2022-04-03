@@ -53,18 +53,16 @@ class DemandeController extends Controller
      * @param  \App\Http\Requests\StoreDemandeRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function ajoutDemande($offre_id, User $user)
+    public function ajoutDemande($offre_id, Condidat $condidat)
     {
-        $demande= Demande::where(['user_id' => $user->id, 'offre_id' => $offre_id]);
+        $demande= Demande::where(['condidat_id' => $condidat->id, 'offre_id' => $offre_id]);
 
         if ($demande) {
             return response()->json(['message' => 'You already applied for this job'], 403);
         }
         $demande = new Demande();
-        $entreprise = Offre::Find($offre_id);
         $demande->offre_id = $offre_id;
-        $demande->entreprise_id = $entreprise->entreprise_id;
-        $demande->user_id = Auth::user()->id;
+        $demande->condidat_id = $condidat->id;
         $demande->status='suspendu';
         $demande->save();
         return response()->json(['success' => true, 'message' => 'Application saved']);
@@ -154,6 +152,15 @@ class DemandeController extends Controller
         
 
         }
+    }
+    public function afficherCondidats($offre_id)
+    {
+        $condidats = Demande::where('offre_id', '=', $offre_id)->get();
+        response()->json([
+            'message'=>'les condidats qui ont postuler pour cette offre',
+            'condidat' => $condidats,
+
+        ]);
     }
     
 
