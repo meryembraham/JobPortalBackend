@@ -94,9 +94,16 @@ class EntrepriseController extends Controller
         }
 
         if ($entreprise->save()) {
-            return true;
+            return response()->json([
+                "success" => true,
+                "message" => "Entreprise created successfully.",
+                "data" => $entreprise
+                ]);
         }
-        return false;
+        return response()->json([
+            "success" => false,
+            "message" => "error",
+            ]);
     }
     
     /**
@@ -109,7 +116,10 @@ class EntrepriseController extends Controller
     {
         $entreprise = Entreprise::find($id);
         if (is_null($entreprise)) {
-            return $this->sendError('condidate not found.');
+            return response()->json([
+                "success" => false,
+                "message" => "Entreprise non trouvée",
+                ]);
         }
         return response()->json([
         "success" => true,
@@ -166,11 +176,17 @@ class EntrepriseController extends Controller
         }
         $entreprise->cover_img = 'nocover';
         if ($entreprise->save()) {
-            return true;
+            return response()->json([
+                "success" => true,
+                "message" => "Entreprise updated",
+                "data" => $entreprise
+                ]);
         }
-        return false;
+        return response()->json([
+            "success" => false,
+            "message" => "erreur",
+            ]);
     }
-
     /**
      * Remove the specified resource from storage.
      *
@@ -185,7 +201,10 @@ class EntrepriseController extends Controller
         }
         $entreprise = Entreprise::findOrFail($id);
         $entreprise->delete();
-        return response(['message' => 'Deleted']);//
+        return response()->json([
+            "success" => true,
+            "message" => "entreprise supprimée",
+            ]);//
     }
     protected function getFileName($file)
     {

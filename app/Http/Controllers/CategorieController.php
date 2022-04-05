@@ -6,6 +6,7 @@ use App\Models\Categorie;
 use App\Http\Requests\StoreCategorieRequest;
 use App\Http\Requests\UpdateCategorieRequest;
 use App\Models\Offre;
+use App\Http\Resources\CategorieResource;
 class CategorieController extends Controller
 {
     /**
@@ -13,16 +14,10 @@ class CategorieController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($id)
+    public function index()
     {
-        $offres = Offre::where('categorie_id',$id)->paginate(20);
-    	$categoryName = Categorie::where('id',$id)->first();
-        return response()->json([
-            "success" => true,
-            "message" => "Categorie retrieved successfully.",
-            "nom categorie"=>$categoryName,
-            "offres" => $offres
-            ]);
+        $categories = Categorie::all();
+        return response([ 'categories' => CategorieResource::collection($categories), 'message' => 'categorie Retrieved successfully'], 200);
     }
 
     /**
@@ -46,6 +41,10 @@ class CategorieController extends Controller
         $categorie = new Categorie();
         $categorie->nom = $request->nom;
         $categorie->save();//
+        return response()->json([
+            "success" => true,
+            "message" => "Categorie created successfully.",
+            ]);
     }
 
     /**
@@ -54,11 +53,32 @@ class CategorieController extends Controller
      * @param  \App\Models\Categorie  $categorie
      * @return \Illuminate\Http\Response
      */
-    public function show(Categorie $categorie)
+    public function show($id=null)
     {
-        return $categorie;//
+        $categorie = Categorie::find($id);
+        if (is_null($categorie)){
+            return response()->json([
+                "success" => false,
+                "message" => "categorie non trouvée",
+                ]);
+        }
+        return response()->json([
+        "success" => true,
+        "message" => "categorie trouvée",
+        "offre" => $categorie
+        ]);
+    }//
+    public function showWithoffre($id)
+    {
+        $offres = Offre::where('categorie_id',$id)->paginate(20);
+    	$categoryName = Categorie::where('id',$id)->first();
+        return response()->json([
+            "success" => true,
+            "message" => "Categorie retrieved successfully.",
+            "nom categorie"=>$categoryName,
+            "offres" => $offres
+            ]);
     }
-
     /**
      * Show the form for editing the specified resource.
      *
@@ -82,6 +102,10 @@ class CategorieController extends Controller
         $categorie = Categorie::Find($categorie_id);
         $categorie->nom = $request->nom;
         $categorie->save();//
+        return response()->json([
+            "success" => true,
+            "message" => "Categorie updated successfully."
+            ]);
     }
 
     /**
@@ -93,6 +117,10 @@ class CategorieController extends Controller
     public function destroy($categorie_id)
     {
         $categorie = Categorie::Find($categorie_id);
-        return $categorie->delete();//
+        $categorie->delete();//
+        return response()->json([
+            "success" => true,
+            "message" => "Categorie deleted successfully."
+            ]);
     }
 }

@@ -16,8 +16,10 @@ class RegionController extends Controller
     public function index()
     {
         $regions = Region::all();
-
-        return $regions;//
+        return response()->json([
+            "success" => true,
+            "regions" => $regions,
+            ]);//
     }
 
     /**
@@ -38,7 +40,11 @@ class RegionController extends Controller
      */
     public function store(StoreRegionRequest $request)
     {
-        return Region::create($request->all());//
+        Region::create($request->all());
+        return response()->json([
+            "success" => true,
+            "message" => 'region created successfully',
+            ]);//
     }
 
     /**
@@ -47,9 +53,20 @@ class RegionController extends Controller
      * @param  \App\Models\Region  $region
      * @return \Illuminate\Http\Response
      */
-    public function show(Region $region)
+    public function show($region_id)
     {
-        return $region;//
+        $region = Region::find($region_id);
+        if (is_null($region)) {
+            return response()->json([
+                "success" => false,
+                "message" => "region non trouvée",
+                ]);
+        }
+        return response()->json([
+        "success" => true,
+        "message" => "region trouvée",
+        "offre" => $region
+        ]);//
     }
 
     /**
@@ -72,7 +89,11 @@ class RegionController extends Controller
      */
     public function update(UpdateRegionRequest $request, Region $region)
     {
-        return $region->update($request->all());//
+        $region->update($request->all());
+        return response([
+            'message' => 'region Update successfully',
+            'region' =>$region,
+        ], 200);//
     }
 
     /**
@@ -83,6 +104,8 @@ class RegionController extends Controller
      */
     public function destroy(Region $region)
     {
-        return $region->delete();//
+        $region->delete();
+        return response()->json([
+            'message' => 'region Deleted']);
     }
 }

@@ -75,7 +75,6 @@ class CondidatController extends Controller
         Storage::disk('public')->makeDirectory('avatar');
     }
 
-      // delete the old avatar image
       // delete old avatar image
     if (Storage::disk('public')->exists('avatar/' . $condidat->avatar)) {
         Storage::disk('public')->delete('avatar/' . $condidat->avatar);
@@ -98,7 +97,10 @@ class CondidatController extends Controller
     $condidat->description = $request->description;
     $condidat->experience = $request->experience;
     $condidat->save();
-
+    return response()->json([
+        "success" => true,
+        "message" => "Condidat created successfully"
+        ]);
 
     }
 
@@ -112,13 +114,16 @@ class CondidatController extends Controller
     {
         $condidat = Condidat::find($id);
         if (is_null($condidat)) {
-            return $this->sendError('condidate not found.');
+            return response()->json([
+                "success" => false,
+                "message" => "Condidat non trouvé",
+                ]);
         }
         return response()->json([
         "success" => true,
         "message" => "Condidat retrieved successfully.",
-        "data" => $condidat
-        ]);//
+        "condidat" => $condidat
+        ]);
         // return response(['condidat' => new CondidatResource($condidat), 'message' => 'Retrieved successfully'], 200);
     }
 
@@ -143,7 +148,6 @@ class CondidatController extends Controller
     public function update(UpdateCondidatRequest $request, Condidat $condidat)
     {
         $condidat->update($request->all());
-
         return response(['condidat' => new CondidatResource($condidat), 'message' => 'Update successfully'], 200);//
     }
 
@@ -157,7 +161,7 @@ class CondidatController extends Controller
     {
         $condidat = Condidat::findOrFail($id);
         $condidat->delete();
-        return response(['message' => 'Deleted']);
+        return response(['message' => 'Condidat Deleted successfully']);
     }
 
 }

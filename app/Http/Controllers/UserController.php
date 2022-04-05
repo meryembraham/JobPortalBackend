@@ -47,7 +47,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return response(['user' => new UserResource($user), 'message' => 'Retrieved successfully'], 200);//
+        return response(['user' => new UserResource($user), 'message' => 'user Retrieved successfully'], 200);//
     }
 
     /**

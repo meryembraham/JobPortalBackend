@@ -32,7 +32,7 @@ class DemandeController extends Controller
             
         }
 
-        response()->json([
+        return response()->json([
             'demandes' => $demandes
         ]);
     }
@@ -53,8 +53,9 @@ class DemandeController extends Controller
      * @param  \App\Http\Requests\StoreDemandeRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function ajoutDemande($offre_id, Condidat $condidat)
-    {
+    public function ajoutDemande($offre_id, Request $request)
+    { 
+        $condidat=$request;
         $demande= Demande::where(['condidat_id' => $condidat->id, 'offre_id' => $offre_id]);
 
         if ($demande) {
@@ -65,7 +66,10 @@ class DemandeController extends Controller
         $demande->condidat_id = $condidat->id;
         $demande->status='suspendu';
         $demande->save();
-        return response()->json(['success' => true, 'message' => 'Application saved']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Demande ajoutée'
+        ]);
     }
 
     /**
@@ -80,7 +84,8 @@ class DemandeController extends Controller
         $offre = $demande->offre();
         $condidat =$demande->condidat;
         $entreprise = $offre->entreprise();
-        response()->json([
+        return response()->json([
+            'success'=>true,
             'condidat' => $condidat,
             'offre' => $offre,
             'entreprise' => $entreprise,
@@ -149,16 +154,20 @@ class DemandeController extends Controller
                     ]);
 
             }
-        
+            return response()->json([
+                'success' => true,
+                'message' => 'Demande acceptée'
+            ]);
 
         }
     }
     public function afficherCondidats($offre_id)
     {
         $condidats = Demande::where('offre_id', '=', $offre_id)->get();
-        response()->json([
+        return response()->json([
+            'success'=>true,
             'message'=>'les condidats qui ont postuler pour cette offre',
-            'condidat' => $condidats,
+            'condidats' => $condidats,
 
         ]);
     }

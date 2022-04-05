@@ -221,6 +221,10 @@ class PassportAuthController extends Controller
             $condidat->update($request->all());
             
         }
+        return response()->json([
+            "success" => true,
+            "message" => "profile updated",
+            ]);
         
     }
 

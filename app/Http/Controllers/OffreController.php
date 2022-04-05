@@ -84,7 +84,7 @@ class OffreController extends Controller
             'date'          => $request->date,
             
         ]);
-        return response()->json(['offre created successfully.', new OffreResource($offre)]);
+        return response()->json(['offre crée', new OffreResource($offre)]);
     }
 
     /**
@@ -93,18 +93,20 @@ class OffreController extends Controller
      * @param  \App\Models\Offre  $offre
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($id=null)
     {
         $offre = Offre::find($id);
         if (is_null($offre)) {
-            return $this->sendError('Offre not found.');
+            return response()->json([
+                "success" => false,
+                "message" => "Offre non trouvée",
+                ]);
         }
         return response()->json([
         "success" => true,
-        "message" => "Offre retrieved successfully.",
-        "data" => $offre
+        "message" => "Offre trouvée",
+        "offre" => $offre
         ]);
-        // return response(['offre' => new OffreResource($offre), 'message' => 'Retrieved successfully'], 200);
         
     }
 
@@ -138,7 +140,7 @@ class OffreController extends Controller
         return response()->json([
             "success" => true,
             "message" => "la liste des offres",
-            "data" => $offres
+            "offres" => $offres
             ]);
     }
     /**
@@ -171,7 +173,7 @@ class OffreController extends Controller
             return response()->json(['error' => 'vous devez avoir un compte entreprise'], 404);
         }
         $offre->delete();
-        return response(['message' => 'Deleted']);
+        return response()->json(['message' => 'Deleted']);
     }//
 }
 
