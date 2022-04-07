@@ -22,13 +22,14 @@ class EntrepriseController extends Controller
         $data = Entreprise::latest()->get();
         return response()->json([EntrepriseResource::collection($data), 'entreprise fetched.']);//
     }
-    public function offres($id, Entreprise $entreprise)
-    {
-        $offres = Offre::where('user_id',$id)->get();
+    public function offres($id, Request $request)
+    {   
+        $entreprise=Entreprise::where('id',$id)->get();
+        $offres = Offre::where('entreprise_id',$id)->get();
         return response()->json([
             "success" => true,
             "message" => "offres retrieved successfully.",
-            "entreprise"=>$entreprise,
+            "entreprise"=> $entreprise,
             "offres" => $offres
             ]);
         

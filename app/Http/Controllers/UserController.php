@@ -45,8 +45,8 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(User $user)
-    {
+    public function show($id)
+    {   $user=User::find($id);
         return response(['user' => new UserResource($user), 'message' => 'user Retrieved successfully'], 200);//
     }
 
@@ -81,6 +81,11 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $user = User::Find($id);
+        $user->delete();//
+        return response()->json([
+            "success" => true,
+            "message" => "User deleted successfully."
+            ]);//
     }
 }

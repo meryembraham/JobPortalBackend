@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PassportAuthController;
 use App\Http\Controllers\OffreController;
 use App\Http\Controllers\DemandeController;
+use App\Http\Controllers\EntrepriseController;
 use App\Http\Controllers\CategorieController;
 /*
 |--------------------------------------------------------------------------
@@ -51,3 +52,28 @@ Route::post('/ajoutcategorie',[CategorieController::class, 'store'])->middleware
 Route::get('/categorie/{id}',[CategorieController::class, 'show']);
 Route::get('/categories',[CategorieController::class, 'index']);
 Route::delete('/deletecategorie{id}',[CategorieController::class, 'destroy'])->middleware('auth:api');
+/*
+** entreprises
+*/
+Route::post('/creerentreprise',[EntrepriseController::class, 'store'])->middleware('auth:api');
+Route::get('/entreprise/{id}',[EntrepriseController::class, 'show']);
+Route::get('/entreprises',[EntrepriseController::class, 'index']);
+Route::put('/updateEntreprise/{id}',[EntrepriseController::class, 'update'])->middleware('auth:api');
+Route::get('/offreEntreprise/{id}',[EntrepriseController::class, 'offres']);
+Route::delete('/deleteEntreprise{id}',[EntrepriseController::class, 'destroy'])->middleware('auth:api');
+/*
+** condidats
+*/
+Route::post('/creerCondidat',[CondidatController::class, 'store'])->middleware('auth:api');
+Route::get('/condidat/{id}',[CondidatController::class, 'show']);
+Route::get('/condidats',[CondidatController::class, 'index']);
+Route::put('/updateCondidat/{id}',[CondidatController::class, 'update'])->middleware('auth:api');
+Route::delete('/deleteCondidat{id}',[CondidatController::class, 'destroy'])->middleware('auth:api');
+/*
+** users
+*/
+Route::post('/ajoutUser',[UserController::class, 'store'])->middleware('auth:api');
+Route::get('/user/{id}',[UserController::class, 'show']);
+Route::get('/users',[UserController::class, 'index']);
+Route::put('/updateUsers/{id}',[UserController::class, 'update'])->middleware('auth:api');
+Route::delete('/deleteUsers{id}',[UserController::class, 'destroy'])->middleware('auth:api');
