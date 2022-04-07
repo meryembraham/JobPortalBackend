@@ -20,7 +20,7 @@ class UserResource extends JsonResource
                 'prenom'=>$this->prenom,
                 'email'=>$this->email,
                 'nom'=>$this->nom,
-                'entreprise_info'=> new EntrepriseResource($this->entreprise_info)
+                'entreprise_info'=> new EntrepriseResource($this->entreprise_info)//$this->entreprise;
         ];
         }elseif($this->role=='condidat'){
         return [
@@ -28,7 +28,7 @@ class UserResource extends JsonResource
                 'prenom'=>$this->prenom,
                 'email'=>$this->email,
                 'nom'=>$this->nom,
-                'condidat_info'=> new CondidatResource($this->condidat_info)
+                'condidat_info'=> new CondidatResource($this->condidat_info)//$this->condidat;
 
         ]; 
         }

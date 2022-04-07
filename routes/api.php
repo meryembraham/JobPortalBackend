@@ -7,6 +7,8 @@ use App\Http\Controllers\OffreController;
 use App\Http\Controllers\DemandeController;
 use App\Http\Controllers\EntrepriseController;
 use App\Http\Controllers\CategorieController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\CondidatController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -45,6 +47,7 @@ Route::delete('/deleteoffre/{id}',[OffreController::class, 'destroy'])->middlewa
 Route::post('/ajoutdemande/{offre_id}',[DemandeController::class, 'ajoutDemande'])->middleware('auth:api');
 Route::get('/demande/{id}',[DemandeController::class, 'show'])->middleware('auth:api');
 Route::get('/demandes',[DemandeController::class, 'index'])->middleware('auth:api');
+Route::get('/demandeEntreprise',[DemandeController::class, 'demandeEntreprise'])->middleware('auth:api');
 /*
 ** categories
 */
@@ -75,5 +78,5 @@ Route::delete('/deleteCondidat{id}',[CondidatController::class, 'destroy'])->mid
 Route::post('/ajoutUser',[UserController::class, 'store'])->middleware('auth:api');
 Route::get('/user/{id}',[UserController::class, 'show']);
 Route::get('/users',[UserController::class, 'index']);
-Route::put('/updateUsers/{id}',[UserController::class, 'update'])->middleware('auth:api');
-Route::delete('/deleteUsers{id}',[UserController::class, 'destroy'])->middleware('auth:api');
+Route::put('/updateUser/{id}',[UserController::class, 'update'])->middleware('auth:api');
+Route::delete('/deleteUser/{id}',[UserController::class, 'destroy'])->middleware('auth:api');

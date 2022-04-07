@@ -24,17 +24,27 @@ class DemandeController extends Controller
     public function index()
     {
         
-        $entreprise = auth()->user()->entreprise;
-
-        if ($entreprise) {
-            $ids =  $entreprise->offres()->pluck('id');
-            $demandes = Demande::whereIn('offre_id', $ids);
-            
-        }
+        $demandes=Demande::all();
 
         return response()->json([
             'demandes' => $demandes
         ]);
+    }
+    public function demandeEntreprise()
+    {
+        $entreprise = auth()->user()->entreprise;
+        if ($entreprise) {
+            $ids =  $entreprise->offres()->pluck('id');
+            $demandes = Demande::whereIn('offre_id', $ids);
+        return response()->json([
+            'demandes' => $demandes
+        ]);
+        }else{
+            return response()->json([
+                'success' => false,
+                'message' => 'error'
+            ]);
+        }
     }
 
     /**
@@ -55,12 +65,12 @@ class DemandeController extends Controller
      */
     public function ajoutDemande($offre_id, Request $request)
     { 
-        $condidat=$request;
-        $demande= Demande::where(['condidat_id' => $condidat->id, 'offre_id' => $offre_id]);
-
+        $user_id = $request->user()->id;
+        $condidat=Condidat::where(['user_id' =>$user_id])->first();
+        $demande= Demande::where(['condidat_id' => $condidat->id, 'offre_id' => $offre_id])->first();
         if ($demande) {
             return response()->json(['message' => 'You already applied for this job'], 403);
-        }
+        }elseif(! $demande){
         $demande = new Demande();
         $demande->offre_id = $offre_id;
         $demande->condidat_id = $condidat->id;
@@ -69,7 +79,13 @@ class DemandeController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Demande ajoutée'
-        ]);
+        ]);}else{
+            return response()->json([
+                'success' => false,
+                'message' => 'error'
+            ]);
+        }
+        
     }
 
     /**
