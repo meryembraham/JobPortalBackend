@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+
 class DemandeController extends Controller
 {
     /**
@@ -23,8 +24,8 @@ class DemandeController extends Controller
      */
     public function index()
     {
-        
-        $demandes=Demande::all();
+
+        $demandes = Demande::all();
 
         return response()->json([
             'demandes' => $demandes
@@ -36,10 +37,10 @@ class DemandeController extends Controller
         if ($entreprise) {
             $ids =  $entreprise->offres()->pluck('id');
             $demandes = Demande::whereIn('offre_id', $ids);
-        return response()->json([
-            'demandes' => $demandes
-        ]);
-        }else{
+            return response()->json([
+                'demandes' => $demandes
+            ]);
+        } else {
             return response()->json([
                 'success' => false,
                 'message' => 'error'
@@ -54,7 +55,6 @@ class DemandeController extends Controller
      */
     public function create($offre_id)
     {
-        
     }
 
     /**
@@ -64,28 +64,28 @@ class DemandeController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function ajoutDemande($offre_id, Request $request)
-    { 
+    {
         $user_id = $request->user()->id;
-        $condidat=Condidat::where(['user_id' =>$user_id])->first();
-        $demande= Demande::where(['condidat_id' => $condidat->id, 'offre_id' => $offre_id])->first();
+        $condidat = Condidat::where(['user_id' => $user_id])->first();
+        $demande = Demande::where(['condidat_id' => $condidat->id, 'offre_id' => $offre_id])->first();
         if ($demande) {
             return response()->json(['message' => 'You already applied for this job'], 403);
-        }elseif(! $demande){
-        $demande = new Demande();
-        $demande->offre_id = $offre_id;
-        $demande->condidat_id = $condidat->id;
-        $demande->status='suspendu';
-        $demande->save();
-        return response()->json([
-            'success' => true,
-            'message' => 'Demande ajoutée'
-        ]);}else{
+        } elseif (!$demande) {
+            $demande = new Demande();
+            $demande->offre_id = $offre_id;
+            $demande->condidat_id = $condidat->id;
+            $demande->status = 'suspendu';
+            $demande->save();
+            return response()->json([
+                'success' => true,
+                'message' => 'Demande ajoutée'
+            ]);
+        } else {
             return response()->json([
                 'success' => false,
                 'message' => 'error'
             ]);
         }
-        
     }
 
     /**
@@ -98,15 +98,15 @@ class DemandeController extends Controller
     {
         $demande = Demande::find($id);
         $offre = $demande->offre();
-        $condidat =$demande->condidat;
+        $condidat = $demande->condidat;
         $entreprise = $offre->entreprise();
         return response()->json([
-            'success'=>true,
+            'success' => true,
             'condidat' => $condidat,
             'offre' => $offre,
             'entreprise' => $entreprise,
             'demande' => $demande
-        ]);//
+        ]); //
     }
 
     /**
@@ -176,17 +176,37 @@ class DemandeController extends Controller
             ]);
 
         }
+        //iheb
+        // $demande = Demande::find($request->id);
+
+        // $demande->offre->update([
+        //     'etat_offre' => 'masquée',
+        //     'condi_accept' => $demande->condidat_id
+        // ]);
+
+        // foreach ($demande->offer->demandes as $d) {
+        //     $d->update(['statue' => 'reff']);
+        // }
+        // $demande->update(['statue' => 'acc']);
+        // return response()->json([
+        //     'success' => true,
+        //     'message' => 'Demande acceptée'
+        // ]);
     }
     public function afficherCondidats($offre_id)
     {
         $condidats = Demande::where('offre_id', '=', $offre_id)->get();
+        //iheb
+        // $ids=[];
+        // foreach($condidats as $c){
+        //     $ids[]=$c->condidat_id;
+        // }
+        // $condidats=Condidat::whereIn('id',$ids)->get();
         return response()->json([
-            'success'=>true,
-            'message'=>'les condidats qui ont postuler pour cette offre',
+            'success' => true,
+            'message' => 'les condidats qui ont postuler pour cette offre',
             'condidats' => $condidats,
 
         ]);
     }
-    
-
 }
