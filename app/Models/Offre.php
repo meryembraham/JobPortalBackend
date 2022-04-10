@@ -13,23 +13,28 @@ class Offre extends Model
     ];
     public function region()
     {
-        return $this->belongsTo(Region::class);
+        return $this->belongsTo(Region::class,'region_id','id');
     }
     public function categorie()
     {
-        return $this->belongsTo(Categorie::class);
+        return $this->belongsTo(Categorie::class,'categorie_id','id');
     }
     public function entreprise()
     {
-        return $this->belongsTo(Entreprise::class);
+        return $this->belongsTo(Entreprise::class,'entreprise_id','id');
     }
     public function demandes()
     {
-        return $this->hasMany(Demande::class);
+        return $this->hasMany(Demande::class,'demande_id','id');
     }
     
     public function notifications()
     {
-        return $this->hasMany(Demande::class);
+        return $this->hasMany(Notification::class,'id','notification_id');
     }
+    public function messages()
+    {
+        return $this->hasMany(Message::class,'id','message_id');
+    }
+    
 }

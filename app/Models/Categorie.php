@@ -8,12 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class Categorie extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'nom',
+        ];
     public function offres()
     {
-        return $this->hasMany(Offre::class);
+        return $this->hasMany(Offre::class,'offre_id','id');
     }
-    public function entreprises()
+    public function admin()
     {
-        return $this->hasMany(Entreprise::class);
+        return $this->hasOne(Admin::class,'admin_id','id');
     }
 }

@@ -15,26 +15,23 @@ class CreateOffresTable extends Migration
     {
         Schema::create('offres', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('entreprise_id');
-            $table->unsignedBigInteger('categorie_id');
-            $table->unsignedBigInteger('region_id');
-            $table->foreign('entreprise_id')->references('id')->on('entreprises')->onDelete('cascade');
-            $table->foreign('categorie_id')->references('id')->on('categories')->onDelete('cascade');
-            $table->foreign('region_id')->references('id')->on('regions')->onDelete('cascade');
-            $table->string('titre');
-            $table->string('type_contrat');
-            $table->string('date_debut');
-            $table->string('diplome');
-            $table->string('exigences');
-            $table->string('avantages');
-            $table->string('rythme');
-            $table->string('salaire');
-            $table->text('outils');
-            $table->text('desciption');
-            $table->text('conpetences');
-            $table->string('type_region');
-            $table->string('etat_offre');
-            $table->string('user_accept');
+            $table->unsignedBigInteger('entreprise_id')->nullable();
+            $table->unsignedBigInteger('categorie_id')->nullable();
+            $table->unsignedBigInteger('region_id')->nullable();
+            $table->string('titre')->nullable();
+            $table->string('type_contrat')->nullable();
+            $table->string('date_debut')->nullable();
+            $table->string('diplome')->nullable();
+            $table->string('exigences')->nullable();
+            $table->string('avantages')->nullable();
+            $table->string('rythme')->nullable();
+            $table->string('salaire')->nullable();
+            $table->text('outils')->nullable();
+            $table->text('desciption')->nullable();
+            $table->text('conpetences')->nullable();
+            $table->string('type_region')->nullable();
+            $table->string('etat_offre')->nullable();
+            $table->string('user_accept')->nullable();
             $table->timestamps();
         });
     }

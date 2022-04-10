@@ -4,8 +4,9 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateRegionsTable extends Migration
+class AddSeenToMessages extends Migration
 {
+    
     /**
      * Run the migrations.
      *
@@ -13,12 +14,8 @@ class CreateRegionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('regions', function (Blueprint $table) {
-            $table->id();
-            $table->string('nom')->nullable();
-            $table->string('largitude')->nullable();
-            $table->string('longitude')->nullable();
-            $table->timestamps();
+        Schema::table('messages', function (Blueprint $table) {
+            $table->string('seen');//
         });
     }
 
@@ -29,6 +26,8 @@ class CreateRegionsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('regions');
+        Schema::table('messages', function (Blueprint $table) {
+            $table->dropColumn('seen');//
+        });
     }
 }

@@ -8,16 +8,21 @@ use Illuminate\Database\Eloquent\Model;
 class Message extends Model
 {
     use HasFactory;
-    public function admin()
+    protected $fillable = [
+        'fromID',
+        'ToID',
+        'contenu',
+    ];
+    public function sender()
     {
-        return $this->belongsTo(Admin::class);
+        return $this->belongsTo(User::class, 'from_id','id');
     }
-    public function condidat()
+    public function receiver()
     {
-        return $this->belongsTo(Condidat::class);
+        return $this->belongsTo(User::class, 'to_id');
     }
-    public function entreprise()
+    public function offre()
     {
-        return $this->belongsTo(Entreprise::class);
+        return $this->belongsTo(Offre::class,'offre_id','id');
     }
 }

@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Region extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'longitude', 'lattitude','nom'];
     public function offres()
     {
-        return $this->hasMany(Offre::class);
+        return $this->hasMany(Offre::class,'offre_id','id');
     }
 }

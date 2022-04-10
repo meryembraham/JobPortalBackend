@@ -19,7 +19,8 @@ class DocumentController extends Controller
      */
     public function index()
     {
-        //
+        $documents = Document::all();
+        return response([ 'documents' => $documents, 'message' => 'Retrieved successfully'], 200);//
     }
 
     /**
@@ -38,13 +39,52 @@ class DocumentController extends Controller
      * @param  \App\Http\Requests\StoreDocumentRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    /*
+    **Ajout Cover letter
+    */
+    public function ajoutCoverletter(Request $request)
     {
-        /*$this->validate($request, [
+        $this->validate($request, [
+            'cover' => ['nullable', 'file', 'mimes:jpeg,pdf,docx,doc,jpg', 'max:1024'],
+        ]);
+        $id = Auth()->user()->condidat->id;
+        $document = Document::where('condidat_id', $id)-> first();
+        $cover = $request->file('cover_letter');
+    $allowed_extensions = ['doc', 'docx', 'pdf', 'jpg', 'jpeg'];
+    if ($cover) {
+      // make the unique name for the image
+    $currentDate = Carbon::now()->toDateString();
+    $coverName = $currentDate . '-' . uniqid() . '.' . $cover->getClientOriginalExtension();
+
+    if (!Storage::disk('public')->exists('cover')) {
+        Storage::disk('public')->makeDirectory('cover');
+    }
+
+      // delete the old cover letter
+    if (Storage::disk('public')->exists('cover/' . $document->cover_letter)) {
+        Storage::disk('public')->delete('cover/' . $document->cover_letter);
+    }
+
+    $filepath = $cover->storeAs('cover', $coverName, 'public');
+    } else {
+    $coverName = $document->cover_letter;
+    }
+    $document->cover_letter = $coverName;
+    $document->save();
+
+    return response()->json(['success' => true, 'message' => 'Cover letter ajouté']);
+
+    }
+    /*
+    **Ajout Cv
+    */
+    public function ajoutCv(Request $request)
+    {
+        $this->validate($request, [
             'cv' => ['nullable', 'file', 'mimes:jpeg,pdf,docx,doc,jpg', 'max:1024'],
         ]);
-        $id = Auth()->user()->id;
-        $document = Document::where('user_id', $id)-> first();
+        $id = Auth()->user()->condidat->id;
+        $document = Document::where('condidat_id', $id)-> first();
         $cv = $request->file('cv');
     $allowed_extensions = ['doc', 'docx', 'pdf', 'jpg', 'jpeg'];
     if ($cv) {
@@ -70,41 +110,104 @@ class DocumentController extends Controller
     $document->cv = $cvName;
     $document->save();
 
-    return response()->json(['success' => true, 'message' => 'document updated']);*/
+    return response()->json(['success' => true, 'message' => 'Cv ajouté']);
 
 //
     }
-    public function coverletter(Request $request){
+    /*
+    **  Update Cover letter
+    */
+    public function UpdateCoverletter(Request $request){
         $this->validate($request,[
             'cover_letter'=>'required|mimes:pdf,doc,docx|max:20000'
         ]);
-        $user_id = auth()->user()->id;
+        $condidat_id = auth()->user()->condidat->id;
         $cover = $request->file('cover_letter')->store('public/files');
-            Document::where('user_id',$user_id)->update([
+            Document::where('condidat_id',$condidat_id)->update([
                 'cover_letter'=>$cover
             ]);
             return response()->json(['success' => true, 'message' => 'cover letter updated']);
         }
-    public function resume(Request $request){
+    /*
+    **  Update Cv
+    */
+    public function UpdateCv(Request $request){
             $this->validate($request,[
-                'resume'=>'required|mimes:pdf,doc,docx|max:20000'
+                'cv'=>'required|mimes:pdf,doc,docx|max:20000'
             ]);
-        $user_id = auth()->user()->id;
-        $resume = $request->file('cv')->store('public/files');
-                Document::where('user_id',$user_id)->update([
-                'cv'=>$resume
+        $condidat_id = auth()->user()->condidat->id;
+        $cv = $request->file('cv')->store('public/files');
+                Document::where('condidat_id',$condidat_id)->update([
+                'cv'=>$cv
                 ]);
-                return response()->json(['success' => true, 'message' => 'resume updated']);
+                return response()->json(['success' => true, 'message' => 'CV updated']);
         }
+    /*
+    **  show Cv
+    */
+    public function showCv($condidat_id){
+        
+        $document=Document::where(['condidat_id'=>$condidat_id])->get();
+        if (is_null($document)) {
+            return response()->json([
+                "success" => false,
+                "message" => "Document non trouvée",
+                ]);
+        }elseif(is_null($document->cv)){
+            return response()->json([
+                "success" => false,
+                "message" => "cv non trouvée",
+                ]);
+        }
+        return response()->json([
+        "success" => true,
+        "message" => "Cv trouvée",
+        "cv" => $document->cv,
+        ]);
+    }
+    /*
+    **  show Cover letter
+    */
+    public function showCover($condidat_id){
+        
+        $document=Document::where(['condidat_id'=>$condidat_id])->get();
+        if (is_null($document)) {
+            return response()->json([
+                "success" => false,
+                "message" => "Document non trouvée",
+                ]);
+        }elseif(is_null($document->cover_letter)){
+            return response()->json([
+                "success" => false,
+                "message" => "cover letter non trouvée",
+                ]);
+        }
+        return response()->json([
+        "success" => true,
+        "message" => "Cover letter  trouvée",
+        "cv" => $document->cover_letter,
+        ]);
+    }
     /**
      * Display the specified resource.
      *
      * @param  \App\Models\Document  $document
      * @return \Illuminate\Http\Response
      */
-    public function show(Document $document)
+    public function show($id)
     {
-        //
+        $document = Document::find($id);
+        if (is_null($document)) {
+            return response()->json([
+                "success" => false,
+                "message" => "Document non trouvée",
+                ]);
+        }
+        return response()->json([
+        "success" => true,
+        "message" => "Document trouvée",
+        "document" => $document
+        ]);//
     }
 
     /**
@@ -131,7 +234,21 @@ class DocumentController extends Controller
 
         return response(['message' => 'Update successfully'], 200);////
     }
-
+    public function showByOwner($condidat_id)
+    {
+        $document=Document::where(['condidat_id'=>$condidat_id])->get();
+        if (is_null($document)) {
+            return response()->json([
+                "success" => false,
+                "message" => "Document non trouvée",
+                ]);
+        }
+        return response()->json([
+        "success" => true,
+        "message" => "Document trouvée",
+        "documents" => $document
+        ]);
+    }
     /**
      * Remove the specified resource from storage.
      *

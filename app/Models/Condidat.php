@@ -8,26 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Condidat extends Model
 {
     use HasFactory;
-    public function documents()
-    {
-        return $this->hasMany(Document::class);
-    }
-    public function messages()
-    {
-        return $this->hasMany(Message::class);
-    }
-    public function notifications()
-    {
-        return $this->hasMany(Notification::class);
-    }
-    public function demandes()
-    {
-        return $this->hasMany(Condidature::class);
-    }
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
     protected $fillable = [
         'nom',
         'prenom',
@@ -43,4 +23,21 @@ class Condidat extends Model
         'langues',
         'description',
     ];
+    public function documents()
+    {
+        return $this->hasMany(Document::class,'id','condidat_id');
+    }
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class,'id','notification_id');
+    }
+    public function demandes()
+    {
+        return $this->hasMany(Condidature::class,'id','document_id');
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class,'user_id','id');
+    }
+    
 }

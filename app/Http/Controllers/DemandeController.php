@@ -70,7 +70,7 @@ class DemandeController extends Controller
         $demande = Demande::where(['condidat_id' => $condidat->id, 'offre_id' => $offre_id])->first();
         if ($demande) {
             return response()->json(['message' => 'You already applied for this job'], 403);
-        } elseif (!$demande) {
+        } elseif (!$demande && $condidat->documents) {
             $demande = new Demande();
             $demande->offre_id = $offre_id;
             $demande->condidat_id = $condidat->id;
@@ -147,61 +147,29 @@ class DemandeController extends Controller
      */
     public function accept(Request $request)
     {
-        $id=$request->id;
-        $demande= Demande::where(['id' => $id]);
-        $offre=$demande->offre;
-        $offre_id=$offre->id;
-        $condidat_id=$demande->condidat_id;
-        if(Demande::where(['condidat'=>$condidat_id,'offre_id'=>$offre_id])->exists() && $offre->user_id == auth()->user())
-        {
-            DB::table('offres')->where('offre_id', $offre_id)->update([
+        $demande = Demande::find($request->id);
+        $demande->offre->update([
             'etat_offre' => 'masquée',
-            'condi_accept' => $condidat_id
-            ]);
-            $demande->status='acceptée';
-            $id_accept=$demande->id;
-            if (Demande::where(['offre_id'=>$offre_id])->exists())
-            {
-                DB::table('demandes')
-                ->where('offre_id', $offre_id)
-                ->where('id','!=',$id_accept)
-                ->update([
-                    'status'=>'rejetée'
-                    ]);
+            'condi_accept' => $demande->condidat_id
+        ]);
 
-            }
-            return response()->json([
-                'success' => true,
-                'message' => 'Demande acceptée'
-            ]);
-
+        foreach ($demande->offer->demandes as $d) {
+            $d->update(['statue' => 'refusée']);
         }
-        //iheb
-        // $demande = Demande::find($request->id);
-
-        // $demande->offre->update([
-        //     'etat_offre' => 'masquée',
-        //     'condi_accept' => $demande->condidat_id
-        // ]);
-
-        // foreach ($demande->offer->demandes as $d) {
-        //     $d->update(['statue' => 'reff']);
-        // }
-        // $demande->update(['statue' => 'acc']);
-        // return response()->json([
-        //     'success' => true,
-        //     'message' => 'Demande acceptée'
-        // ]);
+        $demande->update(['statue' => 'acceptée']);
+        return response()->json([
+        'success' => true,
+            'message' => 'Demande acceptée'
+        ]);
     }
     public function afficherCondidats($offre_id)
     {
         $condidats = Demande::where('offre_id', '=', $offre_id)->get();
-        //iheb
-        // $ids=[];
-        // foreach($condidats as $c){
-        //     $ids[]=$c->condidat_id;
-        // }
-        // $condidats=Condidat::whereIn('id',$ids)->get();
+        $ids=[];
+        foreach($condidats as $c){
+            $ids[]=$c->condidat_id;
+        }
+        $condidats=Condidat::whereIn('id',$ids)->get();
         return response()->json([
             'success' => true,
             'message' => 'les condidats qui ont postuler pour cette offre',

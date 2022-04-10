@@ -16,11 +16,9 @@ class CreateDemandesTable extends Migration
         Schema::create('demandes', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
-            $table->unsignedBigInteger('condidat_id');
-            $table->unsignedBigInteger('offre_id');
-            $table->foreign('condidat_id')->references('id')->on('condidats')->onDelete('cascade');
-            $table->foreign('offre_id')->references('id')->on('offres')->onDelete('cascade');
-            $table->string('status');
+            $table->unsignedBigInteger('condidat_id')->nullable();
+            $table->unsignedBigInteger('offre_id')->nullable();
+            $table->string('status')->nullable();
 
         });
     }

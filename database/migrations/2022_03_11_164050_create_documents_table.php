@@ -15,11 +15,10 @@ class CreateDocumentsTable extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('condidat_id');
-            $table->foreign('condidat_id')->references('id')->on('condidats')->onDelete('cascade');
-            $table->string('categorie');
-            $table->string('cv');
-            $table->string('cover_letter');
+            $table->unsignedBigInteger('condidat_id')->nullable();
+            $table->string('categorie')->nullable();
+            $table->string('cv')->nullable();
+            $table->string('cover_letter')->nullable();
             $table->timestamps();
         });
     }

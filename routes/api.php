@@ -9,6 +9,7 @@ use App\Http\Controllers\EntrepriseController;
 use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CondidatController;
+use App\Http\Controllers\MessageController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -80,3 +81,22 @@ Route::get('/user/{id}',[UserController::class, 'show']);
 Route::get('/users',[UserController::class, 'index']);
 Route::put('/updateUser/{id}',[UserController::class, 'update'])->middleware('auth:api');
 Route::delete('/deleteUser/{id}',[UserController::class, 'destroy'])->middleware('auth:api');
+/*
+** documents
+*/
+//CV
+Route::post('/ajoutCv',[DocumentController::class, 'ajoutCv'])->middleware('auth:api');
+Route::put('/updateCv',[DocumentController::class, 'updateCv'])->middleware('auth:api');
+Route::get('/showCv/{condidat_id}',[DocumentController::class, 'showCv'])->middleware('auth:api');
+//cover_letter
+Route::post('/ajoutCoverletter',[DocumentController::class, 'ajoutCoverletter'])->middleware('auth:api');
+Route::put('/updateCoverletter',[DocumentController::class, 'updateCoverletter'])->middleware('auth:api');
+Route::get('/showCover/{condidat_id}',[DocumentController::class, 'showCover'])->middleware('auth:api');
+//documents by owner
+Route::get('/documents/{condidat_id}',[DocumentController::class, 'showByOwner'])->middleware('auth:api');
+//documents by id
+Route::get('/document/{id}',[DocumentController::class, 'show'])->middleware('auth:api');
+Route::delete('/deleteDocument/{id}',[DocumentController::class, 'destroy'])->middleware('auth:api');
+//messages
+Route::post('/sendMessage',[MessageController::class, 'snedMessage'])->middleware('auth:api');
+Route::delete('/deleteMessage/{id}',[MessageController::class, 'destroy'])->middleware('auth:api');

@@ -12,8 +12,4 @@ class Admin extends Model
     {
         return $this->hasMany(Categorie::class);
     }
-    public function messages()
-    {
-        return $this->hasMany(Message::class);
-    }
 }
