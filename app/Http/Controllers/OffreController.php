@@ -150,14 +150,66 @@ class OffreController extends Controller
      * @param  \App\Models\Offre  $offre
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateOffreRequest $request, $offre)
+    public function update(UpdateOffreRequest $request)
     {   
         $user= auth()->user();
+        $offre=Offre::find($request->offre_id)->first();
         if ($offre->entreprise_id != $user->entreprise->id) {
-            return response()->json(['error' => 'vous devez avoir un compte entreprise'], 404);
+            return response()->json(['error' => 'you have to be employer'], 404);
         }
         $offre->update($request->all());
         return response(['offre' => new OffreResource($offre), 'message' => 'Update successfully'], 200); //
+    }
+    public function destroyJob(Request $request)
+    {
+        $user= auth()->user();
+        $entreprise_id = $request->user()->entreprise->id;
+        $offre= Offre::where('id', $request->offre_id)->where('entreprise_id', $entreprise_id)->first();
+        if ($offre->entreprise_id != $user->entreprise->id) {
+            return response()->json(['error' => 'you have to be employer'], 404);
+        }
+        $offre->etat_offre = 'deleted';
+        if ($offre->save()) {
+            return response()->json(['data' => $offre, 'message' => 'You have deleted offre.']);
+        } else {
+            return response()->json(['message' => 'Failed to delete offre.'], 500);
+
+        }
+    }
+    public function closeOffre(Request $request)
+    {
+        $user= auth()->user();
+        $entreprise_id = $request->user()->entreprise->id;
+        $offre= Offre::where('id', $request->offre_id)->where('entreprise_id', $entreprise_id)->first();
+        if ($offre->entreprise_id != $user->entreprise->id) {
+            return response()->json(['error' => 'you have to be employer'], 404);
+        }
+        $offre->etat_ofre = 'closed';
+        if ($offre->save()) {
+
+            return response()->json(['data' => $offre, 'message' => 'You have updated offre.']);
+        } else {
+            return response()->json(['message' => 'Failed to close offre.'], 500);
+
+        }
+
+    }
+    public function activeOffre(Request $request)
+    {
+        $user= auth()->user();
+        $entreprise_id = $request->user()->entreprise->id;
+        $offre = Offre::where('id', $request->offre_id)->where('entreprise_id', $entreprise_id)->first();
+        if ($offre->entreprise_id != $user->entreprise->id) {
+            return response()->json(['error' => 'you have to be employer'], 404);
+        }
+        $offre->status = 'active';
+        if ($offre->save()) {
+
+            return response()->json(['data' => $offre, 'message' => 'You have updated offre.']);
+        } else {
+            return response()->json(['message' => 'Failed to active offre.'], 500);
+
+        }
     }
 
     /**

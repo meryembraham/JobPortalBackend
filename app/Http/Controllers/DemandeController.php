@@ -74,7 +74,7 @@ class DemandeController extends Controller
             $demande = new Demande();
             $demande->offre_id = $offre_id;
             $demande->condidat_id = $condidat->id;
-            $demande->status = 'suspendu';
+            $demande->status = 'pending';
             $demande->save();
             return response()->json([
                 'success' => true,
@@ -149,18 +149,38 @@ class DemandeController extends Controller
     {
         $demande = Demande::find($request->id);
         $demande->offre->update([
-            'etat_offre' => 'masquée',
-            'condi_accept' => $demande->condidat_id
+            'etat_offre' => 'closed',
+            'user_accept' => $demande->condidat_id
         ]);
 
         foreach ($demande->offer->demandes as $d) {
-            $d->update(['statue' => 'refusée']);
+            $d->update(['status' => 'rejected']);
         }
-        $demande->update(['statue' => 'acceptée']);
+        $demande->update(['status' => 'accepted']);
         return response()->json([
         'success' => true,
             'message' => 'Demande acceptée'
         ]);
+    }
+    public function reject(Request $request)
+    {
+        $user=auth()->user();
+        $demande = Demande::find($request->id)->first();
+        $offre_id = $demande->offre_id;
+        $offre = Offre::where('id',$offre_id)->first();
+        $entreprise_id = $offre->entreprise_id;
+        if ($entreprise_id == $user) {
+        
+            $demande->status = "rejected"; 
+            if ($demande->save()) {
+                return response()->json(['message' => 'Demande rejected successfully.'], 200);
+            } else {
+                return response()->json(['message' => 'error'], 500);
+            }
+        } else {
+            return response()->json(['message' => 'error'], 500);
+        }
+
     }
     public function afficherCondidats($offre_id)
     {

@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateCondidatRequest;
 use App\Models\Offre;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\CondidatResource;
+use App\Models\Demande;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -164,4 +165,10 @@ class CondidatController extends Controller
         return response(['message' => 'Condidat Deleted successfully']);
     }
 
+    public function appliedJobs(Request $request)
+    {
+        $condidat = Condidat::findOrFail($request->id)->first();
+        $appliedJobs = Demande::where('condidat_id', $condidat->id)->get();
+        return response()->json(['data' => $appliedJobs]);
+    }
 }
