@@ -40,7 +40,7 @@ class MessageController extends Controller
         $contenu=$request->contenu;
         if($from == $to_id){
             return response([
-                'status' => 'Unavailable',
+                'success' => false,
                 'message' => "You cant send any messages to you yourself!"
             ], 503);
         }
@@ -54,7 +54,7 @@ class MessageController extends Controller
         $message->to_id = $to_id;
         $message->save();
         return response([
-            'status'=> 'OK',
+            'success' => true,
             'message'=> 'message successfully sent!',
             'data'=> $message
         ], 200);

@@ -153,13 +153,13 @@ class DemandeController extends Controller
             'user_accept' => $demande->condidat_id
         ]);
 
-        foreach ($demande->offer->demandes as $d) {
+        foreach ($demande->offre->demandes as $d) {
             $d->update(['status' => 'rejected']);
         }
         $demande->update(['status' => 'accepted']);
         return response()->json([
         'success' => true,
-            'message' => 'Demande acceptée'
+            'message' => 'Demande accepted'
         ]);
     }
     public function reject(Request $request)
