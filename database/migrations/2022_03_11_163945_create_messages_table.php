@@ -15,9 +15,10 @@ class CreateMessagesTable extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('from_id')->nullable();
-            $table->unsignedBigInteger('to_id')->nullable();
+            $table->foreignId('from_id')->constrained('users')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('to_id')->constrained('users')->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('contenu')->nullable();
+            $table->boolean('seen')->default(1);
             $table->timestamps();
         });
     }

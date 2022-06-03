@@ -17,8 +17,14 @@ class MessageController extends Controller
     
     public function index()
     {
-        //
-    }
+        $user=auth()->user();
+        $messages= Message::where('from_id',$user->id)
+                            ->orwhere('to_id',$user->id)
+                            ->get();
+        return response()->json([
+            'messages' => $messages
+        ]);//
+    }                    
 
     /**
      * Show the form for creating a new resource.
@@ -34,8 +40,8 @@ class MessageController extends Controller
             'contenu' => 'required',
             'to_id' => 'required'
         ]);
-
-        $from= auth()->user();
+        
+        $from= auth()->user()->id;
         $to_id = $request->to_id;
         $contenu=$request->contenu;
         if($from == $to_id){
@@ -44,10 +50,7 @@ class MessageController extends Controller
                 'message' => "You cant send any messages to you yourself!"
             ], 503);
         }
-        $from->id->sent()->create([
-            'contenu'       => $contenu,
-            'to_id' => $to_id,
-        ]);
+        if(((auth()->user()->condidat->id == $request->offre->user_accept)||auth()->user()->entreprise->id==$request->offre->entreprise_id)){
         $message = new Message;
         $message->from_id = $from;
         $message->contenu = $contenu;
@@ -58,6 +61,7 @@ class MessageController extends Controller
             'message'=> 'message successfully sent!',
             'data'=> $message
         ], 200);
+    }
     }
     /**
      * Store a newly created resource in storage.

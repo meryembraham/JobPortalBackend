@@ -14,8 +14,9 @@ class CreateEntreprisesTable extends Migration
     public function up()
     {
         Schema::create('entreprises', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('entreprise_id')->nullable();
+            $table->bigIncrements('id');
+            $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('region_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('nom_entreprise')->nullable();
             $table->text('description')->nullable();
             $table->string('categorie')->nullable();
@@ -25,6 +26,9 @@ class CreateEntreprisesTable extends Migration
             $table->text('adresse')->nullable();
             $table->integer('tel')->nullable();
             $table->string('slogan')->nullable();
+
+            $table->foreignId('secteur_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+
             $table->timestamps();
         });
     }

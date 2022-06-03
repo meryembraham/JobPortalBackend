@@ -9,9 +9,10 @@ class Message extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'fromID',
-        'ToID',
+        'from_id',
+        'to_id',
         'contenu',
+        'seen'
     ];
     public function sender()
     {
@@ -20,9 +21,5 @@ class Message extends Model
     public function receiver()
     {
         return $this->belongsTo(User::class, 'to_id');
-    }
-    public function offre()
-    {
-        return $this->belongsTo(Offre::class,'offre_id','id');
     }
 }

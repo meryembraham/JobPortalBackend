@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Region;
 use App\Http\Requests\StoreRegionRequest;
 use App\Http\Requests\UpdateRegionRequest;
-
+use App\Http\Resources\RegionResource;
 class RegionController extends Controller
 {
     /**
@@ -16,10 +16,7 @@ class RegionController extends Controller
     public function index()
     {
         $regions = Region::all();
-        return response()->json([
-            "success" => true,
-            "regions" => $regions,
-            ]);//
+        return response()->json(['regions' => new RegionResource($regions), 'message' => 'Retrieved successfully'], 200);
     }
 
     /**

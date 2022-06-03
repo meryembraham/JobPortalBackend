@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\OffreResource;
 use App\Models\Entreprise;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use SebastianBergmann\Environment\Console;
+use App\Models\Demande;
 class OffreController extends Controller
 {
     /**
@@ -18,11 +21,15 @@ class OffreController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-    {   
-        $offres = Offre::all();
-        return response([ 'offres' => OffreResource::collection($offres), 'message' => 'Retrieved successfully'], 200);
+    {
+        $offres = Offre::where('etat_offre','active')->with('region')->with('secteur')->get();
+        return response()->json(['offres' => new OffreResource($offres), 'message' => 'Retrieved successfully'], 200);
     }
-
+    public function last()
+    {
+        $offres = Offre::lastest();
+        return response()->json(['offres' => new OffreResource($offres), 'message' => 'Retrieved successfully'], 200);
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -30,60 +37,43 @@ class OffreController extends Controller
      */
     public function create()
     {
-        if (!auth()->user()->role=='entreprise') {
-            return response()->json(['error' => 'vous devez avoir un compte entreprise'], 404);
-        }
-        //
     }
-
+public function Offredemandes($id)
+{
+    $demandes=Demande::where('offre_id',$id)->with('condidat')->with('condidat.user')->get();
+    return response()->json([
+        "success" => true,
+       
+        "demandes" => $demandes
+    ]);
+}
     /**
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\StoreOffreRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function ajoutOffre(StoreOffreRequest $request)
-    {   
-        
-        $user= auth()->user();
-        if (!auth()->user()->role=='entreprise') {
-            return response()->json(['error' => 'Unauthorised'], 401);
-        }
-        $entreprise=$user->entreprise;
-        $entreprise_id=$entreprise->id;
-        $data= $request->all();
-        $validator = Validator::make($data,[
+    public function ajoutOffre(Request $request)
+    {
+        $data = $request->all();
+        $validator = Validator::make($data, [
             'titre' => 'required|max:255',
-            'type_contrat' => 'required|in:CDI,CDD',
-            'rythme' => 'required|in:full time,part time',
-            'type_region' => 'required|in:remote,office',
-            'diplome' => 'required|in:bac+1,bac+2,bac+3,bac+4,bac+5',
-            'experience' => "required|in:aucune experience,moins d'un an,entre 1 et 2 ans,entre 2 et 5 ans,entre 5 et 10 ans,plus que 10 ans",
-            'salaire' => 'required|digits_between:3,5',
-            'outils' => 'required|max:255',
-            'avantages' => 'required|max:1000',
-            'conpetences' => 'required|min:4',
-            'description' => 'required|max:1000',
-            'date' => 'required|date|after:today',
+            'type_contrat' => 'required',
+            'rythme' => 'required',
+            'diplome' => 'required',
+            'experience' => "required",
+            'description' => 'required',
+            'date_debut' => 'required',
+            'competences'=>'required',
         ]);
-        if ($validator->fails()){
+        if ($validator->fails()) {
             return response()->json($validator->errors());
         };
-        $offre = Offre::create([
-            'entreprise_id'     => $entreprise_id,
-            'titre'       => $request->titre,
-            'type_contrat'    => $request->type_contrat,
-            'type_region'    => $request->type_region,
-            'diplome'      => $request->diplome,
-            'experience'     => $request->experience,
-            'salaire'     => $request->salaire,
-            'outils'      => $request->outils,
-            'avantages'         => $request->avantages,
-            'conpetences'          => $request->conpetences,
-            'description'          => $request->description,
-            'date'          => $request->date,
-            
-        ]);
+        $use=$request->entreprise_id;
+        $entreprise=Entreprise::where('user_id',$use)->first();
+        $entreprise_id=$entreprise->id;
+        $data['entreprise_id']= $entreprise_id;
+        $offre = Offre::create($data);
         return response()->json(['offre crée', new OffreResource($offre)]);
     }
 
@@ -93,21 +83,20 @@ class OffreController extends Controller
      * @param  \App\Models\Offre  $offre
      * @return \Illuminate\Http\Response
      */
-    public function show($id=null)
+   public function show($id)
     {
-        $offre = Offre::find($id);
+        $offre = Offre::where('id',$id)->with('region')->with('secteur')->with('entreprise')->with('entreprise.user')->with('entreprise.region')->get()->first();
         if (is_null($offre)) {
             return response()->json([
                 "success" => false,
                 "message" => "Offre non trouvée",
-                ]);
+            ]);
         }
         return response()->json([
-        "success" => true,
-        "message" => "Offre trouvée",
-        "offre" => $offre
+            "success" => true,
+            "message" => "Offre trouvée",
+            "offre" => $offre
         ]);
-        
     }
 
     /**
@@ -116,32 +105,67 @@ class OffreController extends Controller
      * @param  \App\Models\Offre  $offre
      * @return \Illuminate\Http\Response
      */
-    public function edit( $id)
+    public function edit($id)
     {
-       //
+        //
     }
     // Search
+    public function search1(Request$request)
+    {
+        $offres=Offre::where('secteur_id',$request->secteur)->get();
+        return response()->json([
+            'offres'=>$offres
+        ]);
+    }
     public function search(Request $request)
     {
-        $titre = $request->get('titre');
-        $region = $request->get('region');
-        $categorie = $request->get('categorie_id');
+        //$titre = $request->get('mot-cle');
         $experience = $request->get('experience');
-        $education = $request->get('education');
-        if($titre||$region||$categorie||$experience||$education){
-        $offres = Offre::where('titre', 'LIKE','%'.$titre.'%') 
-                ->orWhere('education',$education)
-                ->orWhere('experience',$experience)
-                ->orWhere('region',$region)
-                ->orWhere('categorie_id',$categorie)
+        $rythme = $request->get('rythme');
+        $type_contrat=$request->get('type_contrat');
+        $region = $request->get('region_id');
+        $secteur = $request->get('secteur_id');
+        $motcle=explode(" ",$request->get('mot-cle'));
+        
+       /* if ($titre || $region || $secteur ) {
+            $offres = Offre::where('titre', 'LIKE', '%' . $titre . '%')
+                ->orWhere('region', $region)
+                ->orWhere('secteur_id', $secteur)
                 ->paginate(25);
-        }
-        $offres=Offre::lastest()->paginate(25);
+        }*/
+        $offres = Offre::select()->with('region')->with('secteur')->where(function($q) use($motcle) {
+            foreach($motcle as $mot){
+                $q->orWhere('titre', 'LIKE', '%'.$mot.'%');
+            }
+
+        })->where(function($q) use($region,$secteur,$experience,$rythme,$type_contrat){
+            if ($region){
+                $q->orWhere('region_id',"{$region}");
+            }
+            if ($secteur){
+                $q->orWhere('secteur_id',"{$secteur}");
+            }
+            if($experience){
+                $q->orWhere('experience',"{$experience}");
+            }
+            if($rythme){
+                $q->orWhere('rythme',"{$rythme}");
+            }
+            if($type_contrat){
+                $q->orWhere('type_contrat',"{$type_contrat}");
+            }
+           
+            
+            
+        })->paginate(5);
+        $nbr = $offres->count();
+       // $offres = Offre::lastest()->paginate(25);
         return response()->json([
             "success" => true,
             "message" => "la liste des offres",
-            "offres" => $offres
-            ]);
+            "offres" => $offres,
+
+        ]);
     }
     /**
      * Update the specified resource in storage.
@@ -150,21 +174,23 @@ class OffreController extends Controller
      * @param  \App\Models\Offre  $offre
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateOffreRequest $request)
-    {   
-        $user= auth()->user();
-        $offre=Offre::find($request->offre_id)->first();
-        if ($offre->entreprise_id != $user->entreprise->id) {
+    public function updateoffre(Request $request, $id)
+    {
+        //$user_id = Auth::id();
+        $offre = Offre::find($id);
+       // $entreprise = Entreprise::where('user_id', $user_id);
+        /*if ($offre->entreprise_id != $entreprise->id) {
             return response()->json(['error' => 'you have to be employer'], 404);
-        }
+        }*/
+       
         $offre->update($request->all());
         return response(['offre' => new OffreResource($offre), 'message' => 'Update successfully'], 200); //
     }
     public function destroyJob(Request $request)
     {
-        $user= auth()->user();
+        $user = auth()->user();
         $entreprise_id = $request->user()->entreprise->id;
-        $offre= Offre::where('id', $request->offre_id)->where('entreprise_id', $entreprise_id)->first();
+        $offre = Offre::where('id', $request->offre_id)->where('entreprise_id', $entreprise_id)->first();
         if ($offre->entreprise_id != $user->entreprise->id) {
             return response()->json(['error' => 'you have to be employer'], 404);
         }
@@ -173,14 +199,13 @@ class OffreController extends Controller
             return response()->json(['data' => $offre, 'message' => 'You have deleted offre.']);
         } else {
             return response()->json(['message' => 'Failed to delete offre.'], 500);
-
         }
     }
-    public function closeOffre(Request $request)
+    public function closeOffre(Request $request, $id)
     {
-        $user= auth()->user();
+        /*$user = auth()->user();
         $entreprise_id = $request->user()->entreprise->id;
-        $offre= Offre::where('id', $request->offre_id)->where('entreprise_id', $entreprise_id)->first();
+        $offre = Offre::where('id', $request->offre_id)->where('entreprise_id', $entreprise_id)->first();
         if ($offre->entreprise_id != $user->entreprise->id) {
             return response()->json(['error' => 'you have to be employer'], 404);
         }
@@ -190,26 +215,36 @@ class OffreController extends Controller
             return response()->json(['data' => $offre, 'message' => 'You have updated offre.']);
         } else {
             return response()->json(['message' => 'Failed to close offre.'], 500);
-
-        }
-
+        }*/
+        $offre=Offre::find($id);
+  /*   $offre([
+        'etat_offre'=>'close'
+    ]);
+     dd($offre); */
+          $offre->etat_offre='close';
+           $offre->save();
+     //       $offre->updated();
+    
+        return response()->json([
+            'success' => true,
+                'message' => 'offer closed',
+                
+                
+            ]);
     }
-    public function activeOffre(Request $request)
+    public function activeOffre($id)
     {
-        $user= auth()->user();
-        $entreprise_id = $request->user()->entreprise->id;
-        $offre = Offre::where('id', $request->offre_id)->where('entreprise_id', $entreprise_id)->first();
-        if ($offre->entreprise_id != $user->entreprise->id) {
-            return response()->json(['error' => 'you have to be employer'], 404);
-        }
-        $offre->status = 'active';
-        if ($offre->save()) {
-
-            return response()->json(['data' => $offre, 'message' => 'You have updated offre.']);
-        } else {
-            return response()->json(['message' => 'Failed to active offre.'], 500);
-
-        }
+        
+        $offre = Offre::find($id);
+       
+        $offre->etat_offre = 'active';
+        $offre->save();
+        return response()->json([
+            'success' => true,
+                'message' => 'offer activated',
+                
+                
+            ]);
     }
 
     /**
@@ -218,14 +253,14 @@ class OffreController extends Controller
      * @param  \App\Models\Offre  $offre
      * @return \Illuminate\Http\Response
      */
-    public function destroy( Offre $offre)
-    {   
-        $user= auth()->user();
-        if ($offre->entreprise_id != $user->entreprise->id) {
+    public function destroy($id)
+    {
+       // $user = auth()->user();
+        $offre = Offre::find($id);
+      /*  if ($offre->entreprise_id != $user->entreprise->id) {
             return response()->json(['error' => 'vous devez avoir un compte entreprise'], 404);
-        }
+        }*/
         $offre->delete();
         return response()->json(['message' => 'Deleted']);
-    }//
+    } //
 }
-

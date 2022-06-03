@@ -8,15 +8,23 @@ use Illuminate\Database\Eloquent\Model;
 class Entreprise extends Model
 { 
     protected $fillable = [
-    'nom_entreprise', 'description','categorie','logo','cover_img','site','rythme','adresse','tel','slogan'
+    'nom_entreprise','user_id','region_id', 'description','logo','cover_img','site','adresse','tel','slogan', 'secteur_id',
     ];
     use HasFactory;
     public function user()
     {
-        return $this->hasOne(User::class,'user_id','id');
+        return $this->belongsTo(User::class,'user_id','id');
     }
     public function offres()
     {
-        return $this->hasMany(Offre::class,'user_id','id');
+        return $this->hasMany(Offre::class,'id','offre_id');
+    }
+    public function region()
+    {
+        return $this->belongsTo(Region::class,'region_id','id');
+    }
+    public function secteur()
+    {
+        return $this->belongsTo(Secteur::class,'secteur_id','id');
     }
 }

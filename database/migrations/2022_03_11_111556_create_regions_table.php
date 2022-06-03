@@ -14,10 +14,10 @@ class CreateRegionsTable extends Migration
     public function up()
     {
         Schema::create('regions', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->string('nom')->nullable();
-            $table->string('largitude')->nullable();
             $table->string('longitude')->nullable();
+            $table->string('latitude')->nullable();
             $table->timestamps();
         });
     }

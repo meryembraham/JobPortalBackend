@@ -14,9 +14,8 @@ class CreateDocumentsTable extends Migration
     public function up()
     {
         Schema::create('documents', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('condidat_id')->nullable();
-            $table->string('categorie')->nullable();
+            $table->bigIncrements('id');
+            $table->foreignId('condidat_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('cv')->nullable();
             $table->string('cover_letter')->nullable();
             $table->timestamps();

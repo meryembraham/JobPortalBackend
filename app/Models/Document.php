@@ -11,6 +11,7 @@ class Document extends Model
     protected $fillable = [
         'cv',
         'cover_letter',
+        'condidat_id'
     ];
     public function condidat()
     {

@@ -9,7 +9,7 @@ class Demande extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'status',
+        'status','message','offre_id','condidat_id'
     ];
     public function condidat()
     {

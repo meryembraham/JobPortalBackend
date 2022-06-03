@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Auth;
 use App\Models\Condidat;
 use App\Http\Requests\StoreCondidatRequest;
 use App\Http\Requests\UpdateCondidatRequest;
@@ -22,8 +22,8 @@ class CondidatController extends Controller
      */
     public function index()
     {
-        $data = Condidat::latest()->get();
-        return response()->json([CondidatResource::collection($data), 'conddidates fetched.']);//
+        $condidats = Condidat::with('experiences')->with('formations')->with('user')->with('region')->with('secteur')->get();
+        return response()->json(['condidats' => new CondidatResource($condidats), 'message' => 'Retrieved successfully'], 200);
     }
 
     /**
@@ -113,7 +113,7 @@ class CondidatController extends Controller
      */
     public function show($id)
     {
-        $condidat = Condidat::find($id);
+        $condidat = Condidat::where('id',$id)->with('experiences')->with('formations')->with('region')->with('secteur')->with('user')->get();
         if (is_null($condidat)) {
             return response()->json([
                 "success" => false,
@@ -127,7 +127,45 @@ class CondidatController extends Controller
         ]);
         // return response(['condidat' => new CondidatResource($condidat), 'message' => 'Retrieved successfully'], 200);
     }
+    public function search(Request $request)
+    {
+        //$titre = $request->get('mot-cle');
+        $experience = $request->get('experience');
+        $niveau = $request->get('niveau');
+       
+        $region = $request->get('region_id');
+        $secteur = $request->get('secteur_id');
+        
+        $condidats =Condidat::select()->with('user')->with('region')->with('secteur')->with('experiences')->where(function($q)  {
+            
 
+        })->where(function($q) use($region,$secteur,$experience,$niveau){
+            if ($region){
+                $q->orWhere('region_id',"{$region}");
+            }
+            if ($secteur){
+                $q->orWhere('secteur_id',"{$secteur}");
+            }
+            if($experience){
+                $q->orWhere('experience',"{$experience}");
+            }
+            if($niveau){
+                $q->orWhere('niveau',"{$niveau}");
+            }
+           
+           
+            
+            
+        })->paginate(5);
+        $nbr = $condidats->count();
+       // $offres = Offre::lastest()->paginate(25);
+        return response()->json([
+            "success" => true,
+            "message" => "la liste des condidats",
+            "condidats" => $condidats,
+
+        ]);
+    }
     /**
      * Show the form for editing the specified resource.
      *
@@ -146,8 +184,9 @@ class CondidatController extends Controller
      * @param  \App\Models\Condidat  $condidat
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateCondidatRequest $request, Condidat $condidat)
+    public function update(Request $request, $id)
     {
+      $condidat=Condidat::find($id);
         $condidat->update($request->all());
         return response(['condidat' => new CondidatResource($condidat), 'message' => 'Update successfully'], 200);//
     }
@@ -166,9 +205,9 @@ class CondidatController extends Controller
     }
 
     public function appliedJobs(Request $request)
-    {
-        $condidat = Condidat::findOrFail($request->id)->first();
-        $appliedJobs = Demande::where('condidat_id', $condidat->id)->get();
+    {   $id=auth()->user()->id;
+        $condidat_id=Condidat::where('user_id','=',$id)->first()->get();
+        $appliedJobs = Demande::where('condidat_id','=', $condidat_id)->get();
         return response()->json(['data' => $appliedJobs]);
     }
 }

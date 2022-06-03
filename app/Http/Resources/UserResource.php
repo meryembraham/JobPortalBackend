@@ -14,7 +14,7 @@ class UserResource extends JsonResource
      */
     public function toArray($request)
     {   
-        if ($this->role=='entreprise'){
+       /* if ($this->role=='entreprise'){
         return [
                 'nom'=>$this->nom,
                 'prenom'=>$this->prenom,
@@ -31,6 +31,7 @@ class UserResource extends JsonResource
                 'condidat_info'=> new CondidatResource($this->condidat_info)//$this->condidat;
 
         ]; 
-        }
+        }*/
+        return parent::toArray($request);
     }
 }

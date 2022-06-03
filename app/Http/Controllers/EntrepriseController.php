@@ -1,15 +1,17 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Auth;
 use App\Models\Entreprise;
 use App\Http\Resources\EntrepriseResource;
+use App\Http\Resources\OffreResource;
 use App\Http\Requests\StoreEntrepriseRequest;
 use App\Http\Requests\UpdateEntrepriseRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Offre;
+use Illuminate\Support\Facades\DB;
 class EntrepriseController extends Controller
 {
     /**
@@ -19,22 +21,72 @@ class EntrepriseController extends Controller
      */
     public function index()
     {
-        $data = Entreprise::latest()->get();
+        $entreprises = Entreprise::all();
+        return response()->json(['entreprises' => new EntrepriseResource($entreprises), 'message' => 'Retrieved successfully'], 200);
+    }
+    public function list()
+    {
+        $data = Entreprise::where('entreprises',);
         return response()->json([EntrepriseResource::collection($data), 'entreprise fetched.']);//
     }
-    public function offres($id, Request $request)
-    {   
-        $entreprise=Entreprise::where('id',$id)->get();
-        $offres = Offre::where('entreprise_id',$id)->get();
+
+    public function search(Request $request)
+    {
+        $motcle=explode(" ",$request->get('mot-cle'));
+        $region = $request->get('region_id');
+        $secteur = $request->get('secteur_id');
+        
+        $entreprise =Entreprise::select()->with('user')->with('region')->with('secteur')->where(function($q) use($motcle) {
+            foreach($motcle as $mot){
+                $q->orWhere('nom_entreprise', 'LIKE', '%'.$mot.'%');
+            }
+
+        })->where(function($q)  {
+            
+
+        })->where(function($q) use($region,$secteur){
+            if ($region){
+                $q->orWhere('region_id',"{$region}");
+            }
+            if ($secteur){
+                $q->orWhere('secteur_id',"{$secteur}");
+            }
+            
+        })->paginate(5);
+        $nbr = $entreprise->count();
+       // $offres = Offre::lastest()->paginate(25);
+        return response()->json([
+            "success" => true,
+            "message" => "la liste des entreprises",
+            "entreprises" => $entreprise,
+
+        ]);
+    }
+    
+    public function offres(Request $request)
+    {   $id=Auth::user()->id;
+        $entreprise=Entreprise::where('user_id',$id)->first();
+        $offres = Offre::where('entreprise_id',$entreprise->id)->get();
         return response()->json([
             "success" => true,
             "message" => "offres retrieved successfully.",
             "entreprise"=> $entreprise,
-            "offres" => $offres
+            "offres" => $offres,
             ]);
         
     }
+    public function offresEntreprise(Request $request,$id)
+    { 
+       
+        $offres = Offre::where('entreprise_id',$id)->with('region')->get();
+        return response()->json([
+            "success" => true,
+            "message" => "offres retrieved successfully.",
 
+            "offres" => new OffreResource($offres),
+            ]);
+        
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -44,7 +96,13 @@ class EntrepriseController extends Controller
     {
         //
     }
-
+    public function searchEntreprise(Request$request)
+    {
+        $entreprises=Entreprise::where('secteur_id',$request->secteur)->get();
+        return response()->json([
+            'entreprises'=>$entreprises
+        ]);
+    }
     /**
      * Store a newly created resource in storage.
      *
@@ -115,7 +173,7 @@ class EntrepriseController extends Controller
      */
     public function show($id)
     {
-        $entreprise = Entreprise::find($id);
+        $entreprise = Entreprise::where('id',$id)->with('region')->with('secteur')->with('user')->get();
         if (is_null($entreprise)) {
             return response()->json([
                 "success" => false,
@@ -125,7 +183,7 @@ class EntrepriseController extends Controller
         return response()->json([
         "success" => true,
         "message" => "Entreprise retrieved successfully.",
-        "data" => $entreprise
+        "entreprise" => $entreprise
         ]);//
     }
 
@@ -147,7 +205,7 @@ class EntrepriseController extends Controller
      * @param  \App\Models\Entreprise  $entreprise
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Entreprise $entreprise)
+ /*   public function update(Request $request, Entreprise $entreprise)
     {
         $entreprise->user_id = auth()->user()->id;
         $entreprise->nom = $request->nom;
@@ -187,6 +245,12 @@ class EntrepriseController extends Controller
             "success" => false,
             "message" => "erreur",
             ]);
+    }*/
+    public function update(Request $request, $id)
+    {
+      $entreprise=Entreprise::find($id);
+        $entreprise->update($request->all());
+        return response(['condidat' => new EntrepriseResource($entreprise), 'message' => 'Update successfully'], 200);//
     }
     /**
      * Remove the specified resource from storage.

@@ -6,9 +6,11 @@ use App\Models\Demande;
 use App\Http\Requests\StoreDemandeRequest;
 use App\Http\Requests\UpdateDemandeRequest;
 use App\Models\Condidat;
+use App\Models\Document;
 use App\Models\Entreprise;
 use App\Models\Offre;
 use Carbon\Carbon;
+use App\Http\Resources\DemandeResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +27,7 @@ class DemandeController extends Controller
     public function index()
     {
 
-        $demandes = Demande::all();
+        $demandes = Demande::with('offre')->with('condidat')->get();
 
         return response()->json([
             'demandes' => $demandes
@@ -47,6 +49,18 @@ class DemandeController extends Controller
             ]);
         }
     }
+    public function demandeOffre(Request $request)
+    {
+      $demandes=Demande::where('offre_id',$request->offre_id)->get();
+      return response()->json($demandes);
+    }
+    public function demandeCondidat(Request $request)
+    {
+        $user_id = $request->user()->id;
+        $condidat=Condidat::where('user_id' ,'=', $user_id)->get();
+        $demandes= Demande::whereIn('condidat_id', $condidat)->with('offre')->with('offre.entreprise')->get();
+         return response()->json($demandes);
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -67,10 +81,11 @@ class DemandeController extends Controller
     {
         $user_id = $request->user()->id;
         $condidat = Condidat::where(['user_id' => $user_id])->first();
-        $demande = Demande::where(['condidat_id' => $condidat->id, 'offre_id' => $offre_id])->first();
+        $condidat_id=$condidat->id;
+        $demande = Demande::where(['condidat_id' => $condidat_id, 'offre_id' => $offre_id])->first();
         if ($demande) {
             return response()->json(['message' => 'You already applied for this job'], 403);
-        } elseif (!$demande && $condidat->documents) {
+          /*if (!$demande && $condidat->documents) {
             $demande = new Demande();
             $demande->offre_id = $offre_id;
             $demande->condidat_id = $condidat->id;
@@ -85,7 +100,21 @@ class DemandeController extends Controller
                 'success' => false,
                 'message' => 'error'
             ]);
-        }
+        }*/
+    }else {
+    
+       
+        
+      
+     
+          $data = $request->all();
+          $data['condidat_id'] =$condidat_id;
+          $data['status'] = "pending";
+          $data['offre_id'] = $offre_id;
+     
+        $demande =Demande::create($data);
+        return response()->json(['demande ajoutée ', new DemandeResource($demande)]);
+    }
     }
 
     /**
@@ -96,15 +125,15 @@ class DemandeController extends Controller
      */
     public function show($id)
     {
-        $demande = Demande::find($id);
-        $offre = $demande->offre();
-        $condidat = $demande->condidat;
-        $entreprise = $offre->entreprise();
+        $demande = Demande::where('id',$id)->with('offre')->get();
+        //$offre = $demande->offre();
+       // $condidat_id = $demande->condidat_id;
+        //$entreprise = $offre->entreprise();
         return response()->json([
             'success' => true,
-            'condidat' => $condidat,
-            'offre' => $offre,
-            'entreprise' => $entreprise,
+           //'condidat' => $condidat_id,
+            //'offre' => $offre,
+           //'entreprise' => $entreprise,
             'demande' => $demande
         ]); //
     }
@@ -145,41 +174,34 @@ class DemandeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function accept(Request $request)
+    public function accept($id)
     {
-        $demande = Demande::find($request->id);
-        $demande->offre->update([
-            'etat_offre' => 'closed',
-            'user_accept' => $demande->condidat_id
-        ]);
-
-        foreach ($demande->offre->demandes as $d) {
+        $demande = Demande::find($id);
+        $offre_id=$demande->offre_id;
+       $offre=Offre::where('id',$offre_id)->first();
+          
+            $offre->condidat_id = $demande->condidat_id;
+$offre->save();
+        /*foreach ($demande->offre->demandes as $d) {
             $d->update(['status' => 'rejected']);
-        }
-        $demande->update(['status' => 'accepted']);
+        }*/
+        $demande->status ='acceptée';
+        $demande->save();
         return response()->json([
         'success' => true,
             'message' => 'Demande accepted'
         ]);
     }
-    public function reject(Request $request)
+    public function reject($id)
     {
-        $user=auth()->user();
-        $demande = Demande::find($request->id)->first();
-        $offre_id = $demande->offre_id;
-        $offre = Offre::where('id',$offre_id)->first();
-        $entreprise_id = $offre->entreprise_id;
-        if ($entreprise_id == $user) {
         
-            $demande->status = "rejected"; 
-            if ($demande->save()) {
-                return response()->json(['message' => 'Demande rejected successfully.'], 200);
-            } else {
-                return response()->json(['message' => 'error'], 500);
-            }
-        } else {
-            return response()->json(['message' => 'error'], 500);
-        }
+        $demande = Demande::find($id);
+        
+        $demande->status ='refusée';
+        $demande->save();
+          
+        return response()->json(['message' => 'Demande rejected successfully.'], 200);
+           
 
     }
     public function afficherCondidats($offre_id)

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Admin;
 use Illuminate\Database\Seeder;
 
 class AdminSeeder extends Seeder
@@ -13,6 +14,9 @@ class AdminSeeder extends Seeder
      */
     public function run()
     {
-        //
+        $admin = new Admin([
+            'user_id' => 1,
+        ]);
+        $admin->save();
     }
 }

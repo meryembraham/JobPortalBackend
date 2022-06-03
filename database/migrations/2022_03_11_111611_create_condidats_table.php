@@ -14,19 +14,20 @@ class CreateCondidatsTable extends Migration
     public function up()
     {
         Schema::create('condidats', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id');
-            $table->string('nom')->nullable();
+            $table->bigIncrements('id');
+           // $table->foreignId('user_id');
+           $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+           $table->foreignId('secteur_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+           $table->foreignId('region_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('avatar')->nullable();
-            $table->string('prenom')->nullable();
-            $table->integer('tel')->nullable();
-            $table->string('type')->nullable();
-            $table->text('education')->nullable();
+            $table->string('niveau')->nullable();
+            $table->integer('tel');
+            $table->string('ville')->nullable();
             $table->text('competences')->nullable();
-            $table->text('experience')->nullable();
             $table->text('langues')->nullable();
-            $table->text('description')->nullable();
-            $table->string('localisation')->nullable();
+            $table->text('bio')->nullable();
+            $table->string('civilite');
+            $table->string('date_de_naissance');
             $table->timestamps();
         });
     }

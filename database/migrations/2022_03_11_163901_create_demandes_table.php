@@ -14,10 +14,11 @@ class CreateDemandesTable extends Migration
     public function up()
     {
         Schema::create('demandes', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->timestamps();
-            $table->unsignedBigInteger('condidat_id')->nullable();
-            $table->unsignedBigInteger('offre_id')->nullable();
+            $table->string('message');
+            $table->foreignId('condidat_id')->constrained();
+            $table->foreignId('offre_id')->constrained();
             $table->string('status')->nullable();
 
         });

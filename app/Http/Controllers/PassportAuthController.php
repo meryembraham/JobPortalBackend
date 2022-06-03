@@ -19,7 +19,8 @@ class PassportAuthController extends Controller
      */
     public function register(Request $request)
     {   
-        $this->validate($request, [
+    
+        $validator = Validator::make(request()->all(), [
             'nom' => 'required|string',
             'prenom' => 'required|string',
             'email' => 'required|email|unique:users,email',
@@ -27,55 +28,51 @@ class PassportAuthController extends Controller
             'password_confirmation' => 'min:6',
             'role'=> 'required'
         ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
         
-        if($request->role == 'entreprise'){
+  if($request->role == 'entreprise'){
             $this->validate($request, [
                 'nom_entreprise' => 'required',
+                'tel' => 'required',
+                'region' => 'required',
+                'secteur' => 'required',
+
+            ]);
+        }elseif($request->role == 'candidat'){
+ 
+            $validator = Validator::make(request()->all(), [
                 'tel' => 'required|string',
-                'adresse' => 'required|string',
-                'logo' => 'required|image',
-                'description' => 'required|string',
-                'categorie' => 'required|not_in:-- choisir secteur--',
-
+                'civilite' => 'required',
+                'date_de_naissance' => 'required|date',
+                'region' => 'required',
+                
             ]);
-            
-
-        }elseif($request->role == 'condidat'){
-            $this->validate($request, [
-            
-                'civilite' => 'required|not_in:-- Sélectionnez Civilité--',
-                'date_de_naissance' => 'required|date|date_format:Y-m-d|before:'.now()->subYears(18)->toDateString(),
-                'gouvernorat' => 'required|not_in:-- Sélectionnez Gouvernorat--',
-            ]);
-        }
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
+        } 
         $input = $request->all(); 
         $input['password'] = bcrypt($input['password']); 
+        
         $user = User::create($input); 
         $user->role = $request->role;
         $token = $user->createToken('myapp')->accessToken;
-        
+        //inscription entreprise
         if($request->role == 'entreprise')
         {
-            $entreprise= new Entreprise;
-            $entreprise->user_id=$user->id;
-            $entreprise->nom_entreprise = $request->nom_entreprise;
-            $entreprise->tel = $request->tel;
-            $entreprise->adresse = $request->adresse;
-            $entreprise->logo = $request->logo;
-            $entreprise->description = $request->description;
-            $entreprise->categorie = $request->categorie;
-            $entreprise->save();
+            $input['region_id'] =$request->region;
+            $input['secteur_id'] =$request->secteur;
+            $input['user_id'] =$user->id;
+            $user = Entreprise::create($input); 
         
-        }elseif($request->role == 'condidat'){
-            $condidat= new Condidat;
-            $condidat->user_id= $user->id;
-            $condidat->nom = $request->nom;
-            $condidat->prenom = $request->prenom;
-            $condidat->civilite = $request->civilite;
-            $condidat->date_de_naissance = $request->date_de_naissance;
-            $condidat->localisation = $request->gouvernorat;
-            $condidat->save();
-        
+        }  //inscription candidat
+        elseif($request->role == 'candidat'){
+            $input['user_id'] =$user->id;
+            $input['secteur_id'] =$request->secteur;
+            $input['region_id'] =$request->region;
+            $user = Condidat::create($input);  
         }
         return response()->json(['token' => $token], 200);
         
@@ -85,6 +82,7 @@ class PassportAuthController extends Controller
      */
     public function login(Request $request)
     {
+       
         $data = [
             'email' => $request->email,
             'password' => $request->password
@@ -92,7 +90,7 @@ class PassportAuthController extends Controller
 
         if (auth()->attempt($data)) {
             $token = auth()->user()->createToken('LaravelAuthApp')->accessToken;
-            return response()->json(['token' => $token], 200);
+            return response()->json(['token' => $token, 'user'=>auth()->user(), 'role'=>auth()->user()->role], 200);
         } else {
             return response()->json(['error' => 'Unauthorised'], 401);
         }
@@ -115,6 +113,7 @@ class PassportAuthController extends Controller
     /**
      * User info
      */
+    
     public function whoami()
     {
         $user = auth()->user();
@@ -134,17 +133,9 @@ class PassportAuthController extends Controller
      */
     public function profile()
     {
-        $data= Auth::user();
-        return  response()->json(
-            [
-                
-                    "message" => "Success",
-                    "data" =>$data,
-                
-            ],
-    
-        );
+        return auth('api')->user();
     }
+   
     /**
      * Password Update
      */
@@ -200,9 +191,8 @@ class PassportAuthController extends Controller
                 'nom_entreprise' => 'required',
                 'tel' => 'required|string',
                 'adresse' => 'required|string',
-                'logo' => 'required|image',
                 'description' => 'required|string',
-                'categorie' => 'required|not_in:-- choisir secteur--',
+                'categorie' => 'required|not_in:--Secteur--',
 
             ]);
             $entreprise=Entreprise::where(['user_id'=>$user_id]);
@@ -213,9 +203,9 @@ class PassportAuthController extends Controller
         {
             $this->validate($request, [
             
-                'civilite' => 'required|not_in:-- Sélectionnez Civilité--',
+                'civilite' => 'required|not_in:--Civilité--',
                 'date_de_naissance' => 'required|date|date_format:Y-m-d|before:'.now()->subYears(18)->toDateString(),
-                'gouvernorat' => 'required|not_in:-- Sélectionnez Gouvernorat--',
+                'gouvernorat' => 'required|not_in:--Gouvernorat--',
             ]);
             $condidat=Condidat::where(['user_id'=>$user_id]);
             $condidat->update($request->all());

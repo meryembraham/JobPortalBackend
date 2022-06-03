@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
+use App\Models\Condidat;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -74,6 +75,28 @@ class DocumentController extends Controller
 
     return response()->json(['success' => true, 'message' => 'Cover letter ajouté']);
 
+    }
+
+    public function uploadPDF(Request $request){
+        $id =$request->user()->id;
+       
+        $condidat=Condidat::where('user_id',$id)->get();
+        //dd($condidat);
+
+        $input =$request->all();
+
+        $pdf = $request->file('pdf');
+        $destinationPath = 'cv_candidats/';
+        $pdfName = date('YmdHis') . '.' . $pdf->getClientOriginalExtension();
+
+        $pdf->move($destinationPath, $pdfName);
+
+        $input['cv'] = $pdfName;
+        $input['condidat_id'] = $condidat[0]->id;
+        $document = new Document($input);
+
+        $document->save();
+       
     }
     /*
     **Ajout Cv

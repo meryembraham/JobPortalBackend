@@ -4,9 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddSeenToMessages extends Migration
+class CreateSecteursTable extends Migration
 {
-    
     /**
      * Run the migrations.
      *
@@ -14,8 +13,10 @@ class AddSeenToMessages extends Migration
      */
     public function up()
     {
-        Schema::table('messages', function (Blueprint $table) {
-            $table->string('seen');//
+        Schema::create('secteurs', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('nom');
+            $table->timestamps();
         });
     }
 
@@ -26,8 +27,6 @@ class AddSeenToMessages extends Migration
      */
     public function down()
     {
-        Schema::table('messages', function (Blueprint $table) {
-            $table->dropColumn('seen');//
-        });
+        Schema::dropIfExists('secteurs');
     }
 }
